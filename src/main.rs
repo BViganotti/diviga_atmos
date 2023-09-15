@@ -11,6 +11,7 @@ use std::time::Duration;
 
 use crate::shared_data::AccessSharedData;
 use crate::shared_data::SharedData;
+use actix_web::rt;
 use std::sync::Arc;
 use std::sync::Mutex;
 use time::OffsetDateTime;
@@ -71,7 +72,8 @@ fn main() {
 
     let ccccc = sd.clone();
     thread::spawn(move || {
-        webserver::start_webserver(&ccccc);
+        let server_future = webserver::run_app(&ccccc); //tx);
+        rt::System::new().block_on(server_future)
     });
 
     let _ = handle.join();
