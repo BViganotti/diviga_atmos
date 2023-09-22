@@ -2,6 +2,7 @@ pub mod monitor_atmosphere;
 pub mod read_atmosphere;
 pub mod relay_ctrl;
 pub mod request_atmosphere;
+pub mod routes;
 pub mod shared_data;
 pub mod webserver;
 

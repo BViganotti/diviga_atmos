@@ -175,7 +175,7 @@ impl AccessSharedData {
     }
 
     pub fn humidifier_status(&self) -> bool {
-        let mut lock = self.sd.lock().unwrap();
+        let lock = self.sd.lock().unwrap();
         lock.humidifier_status
     }
     pub fn set_humidifier_status(&self, new_val: bool) {
@@ -183,7 +183,7 @@ impl AccessSharedData {
         lock.humidifier_status = new_val;
     }
     pub fn dehumidifier_status(&self) -> bool {
-        let mut lock = self.sd.lock().unwrap();
+        let lock = self.sd.lock().unwrap();
         lock.dehumidifier_status
     }
     pub fn set_dehumidifier_status(&self, new_val: bool) {
@@ -191,7 +191,7 @@ impl AccessSharedData {
         lock.dehumidifier_status = new_val;
     }
     pub fn heater_status(&self) -> bool {
-        let mut lock = self.sd.lock().unwrap();
+        let lock = self.sd.lock().unwrap();
         lock.heater_status
     }
     pub fn set_heater_status(&self, new_val: bool) {
