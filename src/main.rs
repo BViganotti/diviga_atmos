@@ -17,6 +17,10 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use time::OffsetDateTime;
 
+/*
+This project is very very much influenced by https://github.com/mikehentges/thermostat-pi.
+*/
+
 fn main() {
     let port_writer = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
     let mut port_reader = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
@@ -73,7 +77,7 @@ fn main() {
 
     let ccccc = sd.clone();
     thread::spawn(move || {
-        let server_future = webserver::run_app(&ccccc); //tx);
+        let server_future = webserver::run_app(&ccccc);
         rt::System::new().block_on(server_future)
     });
 

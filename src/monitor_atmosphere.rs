@@ -1,6 +1,4 @@
-#[allow(dead_code)]
 use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN};
-#[allow(dead_code)]
 use crate::{relay_ctrl, shared_data::AccessSharedData};
 use std::{thread, time::Duration};
 use time::OffsetDateTime;
