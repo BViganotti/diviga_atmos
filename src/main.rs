@@ -16,12 +16,16 @@ use actix_web::rt;
 use std::sync::Arc;
 use std::sync::Mutex;
 use time::OffsetDateTime;
+use dotenv::dotenv;
 
 /*
 This project is very very much influenced by https://github.com/mikehentges/thermostat-pi.
 */
 
 fn main() {
+
+    dotenv().ok();
+
     let port_writer = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
     let mut port_reader = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
 
