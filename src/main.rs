@@ -5,6 +5,9 @@ pub mod request_atmosphere;
 pub mod routes;
 pub mod shared_data;
 pub mod webserver;
+pub mod models;
+pub mod db_interface;
+pub mod schema;
 
 use rppal::uart::{Parity, Uart};
 use std::thread;
