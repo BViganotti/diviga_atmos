@@ -1,3 +1,7 @@
+/*
+This project is very very much influenced and heavily copy pasted from https://github.com/mikehentges/thermostat-pi.
+*/
+
 pub mod monitor_atmosphere;
 pub mod read_atmosphere;
 pub mod relay_ctrl;
@@ -22,10 +26,6 @@ use std::sync::Mutex;
 use time::OffsetDateTime;
 
 use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN, RELAY_IN4_PIN};
-
-/*
-This project is very very much influenced by https://github.com/mikehentges/thermostat-pi.
-*/
 
 fn main() {
     dotenv().ok();
@@ -74,24 +74,24 @@ fn main() {
     // We are cloning the pointer to our shared data, and sending it into
     // a new thread that continuously reads the temperature from our sensor,
     // and updates the SharedData::current_temp value.
-    let sdc = sd.clone();
+    let sdclone_1 = sd.clone();
 
     let handle = thread::spawn(move || {
         request_atmosphere::request_atmosphere(port_writer);
     });
 
     thread::spawn(move || {
-        read_atmosphere::read_atmosphere_from_sensors(port_reader, &sdc);
+        read_atmosphere::read_atmosphere_from_sensors(port_reader, &sdclone_1);
     });
 
-    let sdccc = sd.clone();
+    let sdclone_2 = sd.clone();
     thread::spawn(move || {
-        monitor_atmosphere::atmosphere_monitoring(&sdccc);
+        monitor_atmosphere::atmosphere_monitoring(&sdclone_2);
     });
 
-    let ccccc = sd.clone();
+    let sdclone_3 = sd.clone();
     thread::spawn(move || {
-        let server_future = webserver::run_app(&ccccc);
+        let server_future = webserver::run_app(&sdclone_3);
         rt::System::new().block_on(server_future)
     });
 
