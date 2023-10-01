@@ -5,9 +5,9 @@ pub mod request_atmosphere;
 pub mod routes;
 pub mod shared_data;
 pub mod webserver;
-pub mod models;
-pub mod db_interface;
-pub mod schema;
+//pub mod models;
+//pub mod db_interface;
+//pub mod schema;
 
 use rppal::uart::{Parity, Uart};
 use std::thread;
@@ -16,17 +16,18 @@ use std::time::Duration;
 use crate::shared_data::AccessSharedData;
 use crate::shared_data::SharedData;
 use actix_web::rt;
+use dotenv::dotenv;
 use std::sync::Arc;
 use std::sync::Mutex;
 use time::OffsetDateTime;
-use dotenv::dotenv;
+
+use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN, RELAY_IN4_PIN};
 
 /*
 This project is very very much influenced by https://github.com/mikehentges/thermostat-pi.
 */
 
 fn main() {
-
     dotenv().ok();
 
     let port_writer = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
@@ -36,10 +37,10 @@ fn main() {
 
     // Initialize a struct that will be our "global" data, which allows safe access from every thread
     let common_data = SharedData::new(
-        true,
-        0.0,
+        0,
+        13.0, //0.0,
         80.0,
-        0.0,
+        13.0, //0.0,
         80.0,
         0.0,
         80.0,
@@ -58,6 +59,12 @@ fn main() {
         OffsetDateTime::UNIX_EPOCH,
         OffsetDateTime::UNIX_EPOCH,
     );
+
+    // setting all the pins to false just in case
+    relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
+    relay_ctrl::change_relay_status(RELAY_IN2_PIN, false);
+    relay_ctrl::change_relay_status(RELAY_IN3_PIN, false);
+    relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
 
     // The wrapper around our shared data that gives it safe access across threads
     let sd = AccessSharedData {

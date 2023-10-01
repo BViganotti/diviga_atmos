@@ -3,7 +3,7 @@ use time::OffsetDateTime;
 
 // A struct to hold the values that will be shared across all threads in the application
 pub struct SharedData {
-    continue_background_tasks: bool,
+    polling_iterations: u32,
     temp_1: f32,
     humidity_1: f32,
     temp_2: f32,
@@ -28,7 +28,7 @@ pub struct SharedData {
 
 impl SharedData {
     pub fn new(
-        continue_background_tasks: bool,
+        polling_iterations: u32,
         temp_1: f32,
         humidity_1: f32,
         temp_2: f32,
@@ -51,7 +51,7 @@ impl SharedData {
         heater_turn_off_datetime: OffsetDateTime,
     ) -> SharedData {
         SharedData {
-            continue_background_tasks,
+            polling_iterations,
             temp_1,
             humidity_1,
             temp_2,
@@ -94,14 +94,15 @@ impl Clone for AccessSharedData {
 // Getters/Setters for access to the shared data. Everything is wrapped in a MutexGuard to
 // ensure thread safety for every access point.
 impl AccessSharedData {
-    pub fn continue_background_tasks(&self) -> bool {
+    pub fn polling_iterations(&self) -> u32 {
         let lock = self.sd.lock().unwrap();
-        lock.continue_background_tasks
+        lock.polling_iterations
     }
-    pub fn set_continue_background_tasks(&self, new_val: bool) {
+    pub fn increment_polling_iterations(&self) {
         let mut lock = self.sd.lock().unwrap();
-        lock.continue_background_tasks = new_val;
+        lock.polling_iterations = lock.polling_iterations + 1;
     }
+
     pub fn temp_one(&self) -> f32 {
         let lock = self.sd.lock().unwrap();
         lock.temp_1

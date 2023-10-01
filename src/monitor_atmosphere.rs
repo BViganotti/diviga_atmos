@@ -1,19 +1,21 @@
-use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN};
+use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
+// RELAY_IN3_PIN is for the heater, i don't know if i need one yet
 use crate::{relay_ctrl, shared_data::AccessSharedData};
 use std::{thread, time::Duration};
 use time::OffsetDateTime;
 
-// const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..9.0;
-// const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 14.5..100.0;
-// const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 9.0..14.5;
+//const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..11.5;
+// for the heater if i'll need it
+const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 13.5..100.0;
+const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.5..13.5;
 
-const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..-2.5; // TEST
-const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 7.0..100.0; // TEST
-const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = -2.5..9.0; // TEST
+//const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..-2.5; // TEST
+//const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 7.0..100.0; // TEST
+//const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = -2.5..9.0; // TEST
 
 const LOW_HUMIDITY_RANGE: std::ops::Range<f32> = 0.0..60.0;
-const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 90.0..100.0;
-const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 60.0..90.00;
+const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 83.0..100.0;
+const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 77.0..83.00;
 
 pub fn atmosphere_monitoring(sd: &AccessSharedData) {
     loop {
@@ -21,13 +23,18 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
         average_humidity(&sd);
         atmosphere_quality_index(&sd);
 
-        fridge_control(&sd);
-        humidifier_control(&sd);
-        dehumidifier_control(&sd);
+        // the first 2 iterations the sensors often are badly calibrated
+        // which results in crazy values like -50 degrees, i want to wait
+        // for better data before triggering any relays.
+        if sd.polling_iterations() > 2 {
+            fridge_control(&sd);
+            humidifier_control(&sd);
+            dehumidifier_control(&sd);
+        }
 
         debug_data_display(&sd);
 
-        thread::sleep(Duration::from_secs(30));
+        thread::sleep(Duration::from_secs(25));
     }
 }
 
@@ -36,7 +43,7 @@ fn fridge_control(sd: &AccessSharedData) {
     if HIGH_TEMPERATURE_RANGE.contains(&sd.average_temp()) {
         println!("fridge_control() -> high temp range");
         if sd.fridge_status() == false {
-            if now - sd.fridge_turn_off_datetime() < time::Duration::minutes(10) {
+            if now - sd.fridge_turn_off_datetime() < time::Duration::minutes(15) {
                 // we wait and do nothing, we don't want to burn the compressor
                 let wait_time = now - sd.fridge_turn_on_datetime();
                 println!(
@@ -44,11 +51,10 @@ fn fridge_control(sd: &AccessSharedData) {
                     wait_time.as_seconds_f64() * 60.0
                 );
             } else {
-                // more than 10 minutes have passed since the last turn off
+                // more than 15 minutes have passed since the last turn off
                 // we can safely turn on the fridge
-
                 println!("fridge_control() -> turning on the fridge !");
-                //relay_ctrl::change_relay_status(RELAY_IN1_PIN, true);
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN, true);
                 sd.set_fridge_status(true);
                 sd.set_fridge_turn_on_datetime(now);
             }
@@ -68,9 +74,8 @@ fn fridge_control(sd: &AccessSharedData) {
             } else {
                 // more than 30 minutes have passed since the last turn on
                 // we can safely turn off the fridge
-
                 println!("fridge_control() -> turning off the fridge !");
-                //relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
                 sd.set_fridge_status(false);
                 sd.set_fridge_turn_off_datetime(now);
             }
@@ -84,15 +89,22 @@ fn humidifier_control(sd: &AccessSharedData) {
         println!("humidifier_control() -> low humidity range");
         if sd.humidifier_status() != true {
             println!("humidifier_control() -> turning on humidifier !");
-            //relay_ctrl::change_relay_status(RELAY_IN2_PIN, true);
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN, true);
             sd.set_humidifier_status(true);
             sd.set_humidifier_turn_on_datetime(now);
+            // in just a few seconds the humidity can reach 100% which isn't what i want
+            // setting a sleep here and turning off the humidifer after a few seconds
+            thread::sleep(Duration::from_secs(3));
+            println!("humidifier_control() -> 3secs passed ! turning off humidifier !");
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
+            sd.set_humidifier_status(false);
+            sd.set_humidifier_turn_off_datetime(now);
         }
     } else if IDEAL_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
         println!("humidifier_control() -> ideal humidity range");
         if sd.humidifier_status() == true {
             println!("humidifier_control() -> turning off humidifier !");
-            //relay_ctrl::change_relay_status(RELAY_IN2_PIN, false);
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
             sd.set_humidifier_status(false);
             sd.set_humidifier_turn_off_datetime(now);
         }
@@ -105,7 +117,7 @@ fn dehumidifier_control(sd: &AccessSharedData) {
         println!("dehumidifier_control() -> high humidity range");
         if sd.dehumidifier_status() != true {
             println!("dehumidifier_control() -> turning on dehumidifier");
-            //relay_ctrl::change_relay_status(RELAY_IN3_PIN, true);
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN, true);
             sd.set_dehumidifier_status(true);
             sd.set_dehumidifier_turn_on_datetime(now);
         }
@@ -113,7 +125,7 @@ fn dehumidifier_control(sd: &AccessSharedData) {
         println!("dehumidifier_control() -> ideal humidity range");
         if sd.dehumidifier_status() == true {
             println!("dehumidifier_control() -> turning off dehumidifier !");
-            //relay_ctrl::change_relay_status(RELAY_IN3_PIN, false);
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN, false);
             sd.set_dehumidifier_status(false);
             sd.set_dehumidifier_turn_off_datetime(now);
         }
@@ -136,7 +148,7 @@ pub fn average_humidity(sd: &AccessSharedData) {
 
 pub fn atmosphere_quality_index(sd: &AccessSharedData) {
     let temp_range: std::ops::Range<f32> = 11.0..15.0;
-    let humidity_range: std::ops::Range<f32> = 70.0..90.0;
+    let humidity_range: std::ops::Range<f32> = 76.0..83.0;
     let _ideal_temp: f32 = 13.0;
     let _ideal_humidity: f32 = 80.0;
 
@@ -149,7 +161,8 @@ pub fn atmosphere_quality_index(sd: &AccessSharedData) {
 
 pub fn debug_data_display(sd: &AccessSharedData) {
     println!(
-        "last reading time: {}
+        "polling iterations: {}
+last reading time: {}
 temp1: {} - humidity1: {}
 temp2: {} - humidity2: {}
 average temperature: {}
@@ -167,6 +180,7 @@ last dehumidifier turn on time: {}
 last dehumidifier turn off time: {}
 last heater turn on time: {}
 last heater turn off time: {}\n",
+        sd.polling_iterations(),
         sd.last_reading_datetime(),
         sd.temp_one(),
         sd.humidity_one(),

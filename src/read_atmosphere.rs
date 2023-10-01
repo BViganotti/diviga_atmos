@@ -30,6 +30,7 @@ fn process_data(data: &Vec<u8>, sd: &AccessSharedData) {
     let h2: f32 = parts[3].parse().unwrap();
     let now = OffsetDateTime::now_utc();
 
+    sd.increment_polling_iterations();
     sd.set_temp_one(t1);
     sd.set_humidity_one(h1);
     sd.set_temp_two(t2);
