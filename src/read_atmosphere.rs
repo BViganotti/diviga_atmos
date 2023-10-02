@@ -1,5 +1,6 @@
 use crate::shared_data::AccessSharedData;
 use rppal::uart::Uart;
+use time::macros::offset;
 use time::OffsetDateTime;
 
 pub fn read_atmosphere_from_sensors(mut port_reader: Uart, sd: &AccessSharedData) -> ! {
@@ -28,7 +29,7 @@ fn process_data(data: &Vec<u8>, sd: &AccessSharedData) {
     let h1: f32 = parts[1].parse().unwrap();
     let t2: f32 = parts[2].parse().unwrap();
     let h2: f32 = parts[3].parse().unwrap();
-    let now = OffsetDateTime::now_utc();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
 
     sd.increment_polling_iterations();
     sd.set_temp_one(t1);

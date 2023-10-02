@@ -2,15 +2,12 @@ use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
 // RELAY_IN3_PIN is for the heater, i don't know if i need one yet
 use crate::{relay_ctrl, shared_data::AccessSharedData};
 use std::{thread, time::Duration};
+use time::macros::offset;
 use time::OffsetDateTime;
 
 const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..11.5;
 const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 14.0..100.0;
 const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.5..14.0;
-
-//const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..-2.5; // TEST
-//const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 7.0..100.0; // TEST
-//const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = -2.5..9.0; // TEST
 
 const LOW_HUMIDITY_RANGE: std::ops::Range<f32> = 0.0..60.0;
 const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 83.0..100.0;
@@ -38,7 +35,7 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
 }
 
 fn fridge_control(sd: &AccessSharedData) {
-    let now = OffsetDateTime::now_utc();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
     if HIGH_TEMPERATURE_RANGE.contains(&sd.average_temp()) {
         println!("fridge_control() -> high temp range");
         if sd.fridge_status() == false {
@@ -53,7 +50,8 @@ fn fridge_control(sd: &AccessSharedData) {
                 // more than 15 minutes have passed since the last turn off
                 // we can safely turn on the fridge
                 println!("fridge_control() -> turning on the fridge !");
-                relay_ctrl::change_relay_status(RELAY_IN4_PIN, true);
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN, true)
+                    .expect("unable to change relay");
                 sd.set_fridge_status(true);
                 sd.set_fridge_turn_on_datetime(now);
             }
@@ -74,7 +72,8 @@ fn fridge_control(sd: &AccessSharedData) {
                 // more than 20 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
-                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false)
+                    .expect("unable to change relay");
                 sd.set_fridge_status(false);
                 sd.set_fridge_turn_off_datetime(now);
             }
@@ -94,7 +93,8 @@ fn fridge_control(sd: &AccessSharedData) {
                 // more than 20 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
-                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false)
+                    .expect("unable to change relay");
                 sd.set_fridge_status(false);
                 sd.set_fridge_turn_off_datetime(now);
             }
@@ -103,19 +103,19 @@ fn fridge_control(sd: &AccessSharedData) {
 }
 
 fn humidifier_control(sd: &AccessSharedData) {
-    let now = OffsetDateTime::now_utc();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
     if LOW_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
         println!("humidifier_control() -> low humidity range");
         if sd.humidifier_status() != true {
             println!("humidifier_control() -> turning on humidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN1_PIN, true);
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN, true).expect("unable to change relay");
             sd.set_humidifier_status(true);
             sd.set_humidifier_turn_on_datetime(now);
             // in just a few seconds the humidity can reach 100% which isn't what i want
             // setting a sleep here and turning off the humidifer after a few seconds
             thread::sleep(Duration::from_secs(3));
             println!("humidifier_control() -> 3secs passed ! turning off humidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to change relay");
             sd.set_humidifier_status(false);
             sd.set_humidifier_turn_off_datetime(now);
         }
@@ -123,7 +123,7 @@ fn humidifier_control(sd: &AccessSharedData) {
         println!("humidifier_control() -> ideal humidity range");
         if sd.humidifier_status() == true {
             println!("humidifier_control() -> turning off humidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to change relay");
             sd.set_humidifier_status(false);
             sd.set_humidifier_turn_off_datetime(now);
         }
@@ -131,12 +131,12 @@ fn humidifier_control(sd: &AccessSharedData) {
 }
 
 fn dehumidifier_control(sd: &AccessSharedData) {
-    let now = OffsetDateTime::now_utc();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
     if HIGH_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
         println!("dehumidifier_control() -> high humidity range");
         if sd.dehumidifier_status() != true {
             println!("dehumidifier_control() -> turning on dehumidifier");
-            relay_ctrl::change_relay_status(RELAY_IN2_PIN, true);
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN, true).expect("unable to change relay");
             sd.set_dehumidifier_status(true);
             sd.set_dehumidifier_turn_on_datetime(now);
         }
@@ -144,7 +144,7 @@ fn dehumidifier_control(sd: &AccessSharedData) {
         println!("dehumidifier_control() -> ideal humidity range");
         if sd.dehumidifier_status() == true {
             println!("dehumidifier_control() -> turning off dehumidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN2_PIN, false);
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN, false).expect("unable to change relay");
             sd.set_dehumidifier_status(false);
             sd.set_dehumidifier_turn_off_datetime(now);
         }

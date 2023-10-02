@@ -9,9 +9,6 @@ pub mod request_atmosphere;
 pub mod routes;
 pub mod shared_data;
 pub mod webserver;
-//pub mod models;
-//pub mod db_interface;
-//pub mod schema;
 
 use rppal::uart::{Parity, Uart};
 use std::thread;
@@ -23,6 +20,7 @@ use actix_web::rt;
 use dotenv::dotenv;
 use std::sync::Arc;
 use std::sync::Mutex;
+use time::macros::offset;
 use time::OffsetDateTime;
 
 use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN, RELAY_IN4_PIN};
@@ -38,33 +36,33 @@ fn main() {
     // Initialize a struct that will be our "global" data, which allows safe access from every thread
     let common_data = SharedData::new(
         0,
-        13.0, //0.0,
+        13.0,
         80.0,
-        13.0, //0.0,
-        80.0,
-        0.0,
+        13.0,
         80.0,
         0.0,
+        80.0,
+        0.0,
         false,
         false,
         false,
         false,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
-        OffsetDateTime::UNIX_EPOCH,
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
+        OffsetDateTime::UNIX_EPOCH.to_offset(offset!(+2)),
     );
 
     // setting all the pins to false just in case
-    relay_ctrl::change_relay_status(RELAY_IN1_PIN, false);
-    relay_ctrl::change_relay_status(RELAY_IN2_PIN, false);
-    relay_ctrl::change_relay_status(RELAY_IN3_PIN, false);
-    relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
+    relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN2_PIN, false).expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN3_PIN, false).expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN4_PIN, false).expect("unable to initialize relay");
 
     // The wrapper around our shared data that gives it safe access across threads
     let sd = AccessSharedData {

@@ -1,6 +1,5 @@
 use crate::AccessSharedData;
 use actix_web::{http::header::ContentType, web, HttpResponse};
-use time::OffsetDateTime;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct AvgAtmosphereData {

@@ -2,6 +2,7 @@ use crate::relay_ctrl::change_relay_status;
 use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
 use crate::AccessSharedData;
 use actix_web::{http::header::ContentType, web, HttpResponse};
+use time::macros::offset;
 use time::OffsetDateTime;
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -16,7 +17,7 @@ pub struct ChangeFridgeStatus {
 pub async fn change_fridge_status(sd: web::Data<AccessSharedData>) -> HttpResponse {
     let prev_fridge_status = sd.fridge_status();
     let mut res = String::new();
-    let now = OffsetDateTime::now_utc();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
 
     if sd.fridge_status() == true {
         if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(20) {
@@ -32,7 +33,7 @@ pub async fn change_fridge_status(sd: web::Data<AccessSharedData>) -> HttpRespon
             // more than 20 minutes have passed since the last turn on
             // we can safely turn off the fridge
             println!("fridge_control() -> turning off the fridge !");
-            change_relay_status(RELAY_IN4_PIN, false);
+            change_relay_status(RELAY_IN4_PIN, false).expect("could not change relay");
             sd.set_fridge_status(false);
             sd.set_fridge_turn_off_datetime(now);
             res = "fridge turned off !".to_owned();
@@ -51,7 +52,7 @@ pub async fn change_fridge_status(sd: web::Data<AccessSharedData>) -> HttpRespon
             // more than 20 minutes have passed since the last turn on
             // we can safely turn off the fridge
             println!("fridge_control() -> turning on the fridge !");
-            change_relay_status(RELAY_IN4_PIN, true);
+            change_relay_status(RELAY_IN4_PIN, true).expect("could not change relay");
             sd.set_fridge_status(true);
             sd.set_fridge_turn_on_datetime(now);
             res = "fridge turned on !".to_owned();
@@ -79,6 +80,8 @@ pub struct ChangeHumidifierStatus {
     last_humidifier_turn_off: String,
     response: String,
 }
+
+
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct ChangeDehumidifierStatus {
