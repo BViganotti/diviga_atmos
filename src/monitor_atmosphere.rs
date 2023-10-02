@@ -4,10 +4,9 @@ use crate::{relay_ctrl, shared_data::AccessSharedData};
 use std::{thread, time::Duration};
 use time::OffsetDateTime;
 
-//const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..11.5;
-// for the heater if i'll need it
-const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 13.5..100.0;
-const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.5..13.5;
+const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..11.5;
+const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 14.0..100.0;
+const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.5..14.0;
 
 //const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..-2.5; // TEST
 //const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 7.0..100.0; // TEST
@@ -63,8 +62,8 @@ fn fridge_control(sd: &AccessSharedData) {
     } else if IDEAL_TEMPERATURE_RANGE.contains(&sd.average_temp()) {
         println!("fridge_control() -> ideal temp range");
         if sd.fridge_status() == true {
-            if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(30) {
-                // we might be just entering the ideal range so we also wait 30 minutes
+            if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(20) {
+                // we might be just entering the ideal range so we also wait 20 minutes
                 // because lowering the temp takes a while
                 let wait_time = now - sd.fridge_turn_on_datetime();
                 println!(
@@ -72,7 +71,27 @@ fn fridge_control(sd: &AccessSharedData) {
                     wait_time.as_seconds_f64() * 60.0
                 );
             } else {
-                // more than 30 minutes have passed since the last turn on
+                // more than 20 minutes have passed since the last turn on
+                // we can safely turn off the fridge
+                println!("fridge_control() -> turning off the fridge !");
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
+                sd.set_fridge_status(false);
+                sd.set_fridge_turn_off_datetime(now);
+            }
+        }
+    } else if LOW_TEMPERATURE_RANGE.contains(&sd.average_temp()) {
+        println!("fridge_control() -> low temp range");
+        if sd.fridge_status() == true {
+            if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(20) {
+                // we might be just entering the ideal range so we also wait 20 minutes
+                // because lowering the temp takes a while
+                let wait_time = now - sd.fridge_turn_on_datetime();
+                println!(
+                    "fridge_control() -> waiting {} minutes",
+                    wait_time.as_seconds_f64() * 60.0
+                );
+            } else {
+                // more than 20 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
                 relay_ctrl::change_relay_status(RELAY_IN4_PIN, false);
