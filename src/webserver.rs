@@ -3,7 +3,9 @@ use actix_web::{web, App, HttpServer};
 use crate::routes::atmosphere::get_atmosphere;
 use crate::routes::get_full_atmospheric_data;
 use crate::routes::index::index;
+use crate::routes::relay_control::change_dehumidifier_status;
 use crate::routes::relay_control::change_fridge_status;
+use crate::routes::relay_control::trigger_humidifier;
 use crate::routes::relay_status::get_dehumidifier_status;
 use crate::routes::relay_status::get_fridge_status;
 use crate::routes::relay_status::get_humidifier_status;
@@ -24,6 +26,11 @@ pub async fn run_app(sd: &AccessSharedData) -> std::io::Result<()> {
             .route(
                 "/change_fridge_status",
                 web::post().to(change_fridge_status),
+            )
+            .route("/trigger_humidifier", web::post().to(trigger_humidifier))
+            .route(
+                "/change_dehumidifier_status",
+                web::post().to(change_dehumidifier_status),
             )
             .route("/get_fridge_status", web::get().to(get_fridge_status))
             .route(

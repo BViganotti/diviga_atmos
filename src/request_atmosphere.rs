@@ -6,6 +6,6 @@ pub fn request_atmosphere(mut port_writer: Uart) {
 
     loop {
         port_writer.write(&send_buffer).unwrap();
-        thread::sleep(Duration::from_secs(15));
+        thread::sleep(Duration::from_secs(20));
     }
 }

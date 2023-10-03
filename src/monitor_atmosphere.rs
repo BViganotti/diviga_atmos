@@ -2,6 +2,7 @@ use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
 // RELAY_IN3_PIN is for the heater, i don't know if i need one yet
 use crate::{relay_ctrl, shared_data::AccessSharedData};
 use std::{thread, time::Duration};
+use time::format_description;
 use time::macros::offset;
 use time::OffsetDateTime;
 
@@ -30,7 +31,7 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
 
         debug_data_display(&sd);
 
-        thread::sleep(Duration::from_secs(25));
+        thread::sleep(Duration::from_secs(30));
     }
 }
 
@@ -60,8 +61,8 @@ fn fridge_control(sd: &AccessSharedData) {
     } else if IDEAL_TEMPERATURE_RANGE.contains(&sd.average_temp()) {
         println!("fridge_control() -> ideal temp range");
         if sd.fridge_status() == true {
-            if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(20) {
-                // we might be just entering the ideal range so we also wait 20 minutes
+            if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(30) {
+                // we might be just entering the ideal range so we also wait 30 minutes
                 // because lowering the temp takes a while
                 let wait_time = now - sd.fridge_turn_on_datetime();
                 println!(
@@ -69,7 +70,7 @@ fn fridge_control(sd: &AccessSharedData) {
                     wait_time.as_seconds_f64() * 60.0
                 );
             } else {
-                // more than 20 minutes have passed since the last turn on
+                // more than 30 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
                 relay_ctrl::change_relay_status(RELAY_IN4_PIN, false)
@@ -90,7 +91,7 @@ fn fridge_control(sd: &AccessSharedData) {
                     wait_time.as_seconds_f64() * 60.0
                 );
             } else {
-                // more than 20 minutes have passed since the last turn on
+                // more than 0 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
                 relay_ctrl::change_relay_status(RELAY_IN4_PIN, false)
@@ -168,8 +169,6 @@ pub fn average_humidity(sd: &AccessSharedData) {
 pub fn atmosphere_quality_index(sd: &AccessSharedData) {
     let temp_range: std::ops::Range<f32> = 11.0..15.0;
     let humidity_range: std::ops::Range<f32> = 76.0..83.0;
-    let _ideal_temp: f32 = 13.0;
-    let _ideal_humidity: f32 = 80.0;
 
     if temp_range.contains(&sd.average_temp()) && humidity_range.contains(&sd.average_humidity()) {
         sd.set_atmosphere_quality_index(100.0);
@@ -179,6 +178,8 @@ pub fn atmosphere_quality_index(sd: &AccessSharedData) {
 }
 
 pub fn debug_data_display(sd: &AccessSharedData) {
+    let format =
+        format_description::parse("[year]-[month]-[day] [hour]:[minute]:[second]").unwrap();
     println!(
         "polling iterations: {}
 last reading time: {}
@@ -200,7 +201,7 @@ last dehumidifier turn off time: {}
 last heater turn on time: {}
 last heater turn off time: {}\n",
         sd.polling_iterations(),
-        sd.last_reading_datetime(),
+        sd.last_reading_datetime().format(&format).unwrap(),
         sd.temp_one(),
         sd.humidity_one(),
         sd.temp_two(),
@@ -212,13 +213,13 @@ last heater turn off time: {}\n",
         sd.humidifier_status(),
         sd.dehumidifier_status(),
         sd.heater_status(),
-        sd.fridge_turn_on_datetime(),
-        sd.fridge_turn_off_datetime(),
-        sd.humidifier_turn_on_datetime(),
-        sd.humidifier_turn_off_datetime(),
-        sd.dehumidifier_turn_on_datetime(),
-        sd.dehumidifier_turn_off_datetime(),
-        sd.heater_turn_on_datetime(),
-        sd.heater_turn_off_datetime()
+        sd.fridge_turn_on_datetime().format(&format).unwrap(),
+        sd.fridge_turn_off_datetime().format(&format).unwrap(),
+        sd.humidifier_turn_on_datetime().format(&format).unwrap(),
+        sd.humidifier_turn_off_datetime().format(&format).unwrap(),
+        sd.dehumidifier_turn_on_datetime().format(&format).unwrap(),
+        sd.dehumidifier_turn_off_datetime().format(&format).unwrap(),
+        sd.heater_turn_on_datetime().format(&format).unwrap(),
+        sd.heater_turn_off_datetime().format(&format).unwrap()
     );
 }

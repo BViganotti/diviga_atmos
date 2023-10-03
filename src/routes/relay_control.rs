@@ -2,6 +2,7 @@ use crate::relay_ctrl::change_relay_status;
 use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
 use crate::AccessSharedData;
 use actix_web::{http::header::ContentType, web, HttpResponse};
+use std::{thread, time::Duration};
 use time::macros::offset;
 use time::OffsetDateTime;
 
@@ -81,14 +82,74 @@ pub struct ChangeHumidifierStatus {
     response: String,
 }
 
+pub async fn trigger_humidifier(sd: web::Data<AccessSharedData>) -> HttpResponse {
+    let mut res = String::new();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
 
+    if sd.humidifier_status() != true {
+        change_relay_status(RELAY_IN1_PIN, true).expect("unable to change relay");
+        sd.set_humidifier_status(true);
+        sd.set_humidifier_turn_on_datetime(now);
+        // in just a few seconds the humidity can reach 100% which isn't what i want
+        // setting a sleep here and turning off the humidifer after a few seconds
+        thread::sleep(Duration::from_secs(3));
+        change_relay_status(RELAY_IN1_PIN, false).expect("unable to change relay");
+        sd.set_humidifier_status(false);
+        sd.set_humidifier_turn_off_datetime(now);
+        res = "humidifier turned on and off for 3 secs".to_owned();
+    }
+
+    let values = ChangeHumidifierStatus {
+        humidifier_status: sd.humidifier_status(),
+        last_humidifier_turn_on: sd.humidifier_turn_on_datetime().to_string(),
+        last_humidifier_turn_off: sd.humidifier_turn_off_datetime().to_string(),
+        response: res.to_owned(),
+    };
+    let values = serde_json::to_string(&values).unwrap();
+
+    HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .body(values)
+}
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct ChangeDehumidifierStatus {
-    dehumidifier_status: bool,
+    previous_dehumidifier_status: bool,
+    new_dehumidifier_status: bool,
     last_dehumidifier_turn_on: String,
     last_dehumidifier_turn_off: String,
     response: String,
+}
+
+pub async fn change_dehumidifier_status(sd: web::Data<AccessSharedData>) -> HttpResponse {
+    let mut res = String::new();
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let prev_status = sd.dehumidifier_status();
+
+    if sd.dehumidifier_status() != true {
+        change_relay_status(RELAY_IN2_PIN, true).expect("unable to change relay");
+        sd.set_dehumidifier_status(true);
+        sd.set_dehumidifier_turn_on_datetime(now);
+        res = "dehumidifier turned on".to_owned();
+    } else {
+        change_relay_status(RELAY_IN2_PIN, false).expect("unable to change relay");
+        sd.set_dehumidifier_status(false);
+        sd.set_dehumidifier_turn_off_datetime(now);
+        res = "dehumidifier turned off".to_owned();
+    }
+
+    let values = ChangeDehumidifierStatus {
+        previous_dehumidifier_status: prev_status,
+        new_dehumidifier_status: sd.dehumidifier_status(),
+        last_dehumidifier_turn_on: sd.dehumidifier_turn_on_datetime().to_string(),
+        last_dehumidifier_turn_off: sd.dehumidifier_turn_off_datetime().to_string(),
+        response: res.to_owned(),
+    };
+    let values = serde_json::to_string(&values).unwrap();
+
+    HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .body(values)
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
