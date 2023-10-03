@@ -82,38 +82,36 @@ pub async fn index(common_data: web::Data<AccessSharedData>) -> HttpResponse {
     let mut html_res: String = format!(
         "<h2>Atmospheric data:</h2>
     <ul>    
-    <li>Average temperature: <strong>{}</strong></li>
-    <li>Average Humidity: <strong>{}</strong></li>
+    <li><em>Average temperature:</em> <strong>{}</strong> degrees</li>
+    <li><em>Average Humidity:</em> <strong>{}</strong> %RH</li>
     </ul>
     <ul>
-    <li>Last reading time: {}</li>
-    <li>temp 1: {} - humidity 1: {}</li>
-    <li>temp 2: {} - humidity 2: {}</li>
+    <li><em>Last reading time:</em> <strong>{}</strong></li>
+    <li><em>Temp 1:</em> <strong>{}</strong> degrees - <em>Humidity 1:</em> <strong>{} %RH</strong></li>
+    <li><em>Temp 2:</em> <strong>{}</strong> degrees - <em>Humidity 2:</em> <strong>{} %RH</strong></li>
     </ul>
-    
     <ul>
-    <li>Fridge status: <strong>{}</strong></li>
+    <li><em>Fridge status:</em> <strong>{}</strong></li>
     <li>last fridge turn ON time: </li>
-     <li>{}</li>
+     <li><strong>{}</strong></li>
     <li>last fridge turn OFF time: </li>
-     <li>{}</li>
+     <li><strong>{}</strong></li>
     </ul>
-      
     <ul>
-    <li>Humidifier status: <strong>{}</strong></li>
+    <li><em>Humidifier status:</em> <strong>{}</strong></li>
     <li>last humidifier turn ON time: </li>
-     <li>{}</li>
+     <li><strong>{}</strong></li>
     <li>last humidifier turn OFF time: </li>
-     <li>{}</li>
+     <li><strong>{}</strong></li>
     </ul>
-    
     <ul>
-    <li>Dehumidifier status: <strong>{}</strong></li>
+    <li><em>Dehumidifier status:</em> <strong>{}</strong></li>
     <li>last dehumidifier turn ON time: </li>
-     <li>{}</li>
+     <li><strong>{}</strong></li>
     <li>last dehumidifier turn OFF time: </li>
-     <li>{}</li>
+     <li><strong>{}</strong></li>
     </ul>
+    <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
     <p><strong>Copyright DIVIGA 2023-Eternity</strong></p></body></html>",
         &common_data.average_temp().to_string(),
         &common_data.average_humidity().to_string(),
