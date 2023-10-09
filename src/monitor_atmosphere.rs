@@ -11,8 +11,8 @@ const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 14.0..100.0;
 const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.5..14.0;
 
 const LOW_HUMIDITY_RANGE: std::ops::Range<f32> = 0.0..60.0;
-const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 83.0..100.0;
-const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 77.0..83.00;
+const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 81.0..100.0;
+const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 77.0..81.00;
 
 pub fn atmosphere_monitoring(sd: &AccessSharedData) {
     loop {
