@@ -2,6 +2,7 @@ use actix_web::{web, App, HttpServer};
 
 use crate::routes::atmosphere::get_atmosphere;
 use crate::routes::get_full_atmospheric_data;
+use crate::routes::heartbeat::pulse;
 use crate::routes::index::index;
 use crate::routes::relay_control::change_dehumidifier_status;
 use crate::routes::relay_control::change_fridge_status;
@@ -41,6 +42,7 @@ pub async fn run_app(sd: &AccessSharedData) -> std::io::Result<()> {
                 "/get_dehumidifier_status",
                 web::get().to(get_dehumidifier_status),
             )
+            .route("/heartbeat", web::get().to(pulse))
             .service(web::resource("/").to(index))
     })
     .bind(("0.0.0.0", 8080))?

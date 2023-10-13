@@ -14,7 +14,7 @@ pub async fn index(common_data: web::Data<AccessSharedData>) -> HttpResponse {
     let format =
         format_description::parse("[year]-[month]-[day] [hour]:[minute]:[second]").unwrap();
 
-    let mut html_res: String = format!(
+    let html_res: String = format!(
         "<h2>Atmospheric data:</h2>
     <ul>    
     <li><em>Average temperature:</em> <strong>{}</strong> degrees</li>

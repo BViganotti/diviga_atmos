@@ -3,7 +3,7 @@ use time::OffsetDateTime;
 
 // A struct to hold the values that will be shared across all threads in the application
 pub struct SharedData {
-    polling_iterations: u32,
+    polling_iterations: u64,
     temp_1: f32,
     humidity_1: f32,
     temp_2: f32,
@@ -28,7 +28,7 @@ pub struct SharedData {
 
 impl SharedData {
     pub fn new(
-        polling_iterations: u32,
+        polling_iterations: u64,
         temp_1: f32,
         humidity_1: f32,
         temp_2: f32,
@@ -94,7 +94,7 @@ impl Clone for AccessSharedData {
 // Getters/Setters for access to the shared data. Everything is wrapped in a MutexGuard to
 // ensure thread safety for every access point.
 impl AccessSharedData {
-    pub fn polling_iterations(&self) -> u32 {
+    pub fn polling_iterations(&self) -> u64 {
         let lock = self.sd.lock().unwrap();
         lock.polling_iterations
     }
