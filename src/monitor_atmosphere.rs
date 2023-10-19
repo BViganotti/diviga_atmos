@@ -6,13 +6,13 @@ use time::format_description;
 use time::macros::offset;
 use time::OffsetDateTime;
 
-const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..11.5;
+const LOW_TEMPERATURE_RANGE: std::ops::Range<f32> = -20.0..11.0;
 const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 14.0..100.0;
-const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.5..14.0;
+const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.0..14.0;
 
 const LOW_HUMIDITY_RANGE: std::ops::Range<f32> = 0.0..60.0;
-const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 81.0..100.0;
-const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 77.0..81.00;
+const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 82.0..100.0;
+const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 77.0..82.00;
 
 pub fn atmosphere_monitoring(sd: &AccessSharedData) {
     loop {
@@ -20,10 +20,10 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
         average_humidity(&sd);
         atmosphere_quality_index(&sd);
 
-        // the first 2 iterations the sensors often are badly calibrated
+        // the first 4 iterations the sensors often are badly calibrated
         // which results in crazy values like -50 degrees, i want to wait
         // for better data before triggering any relays.
-        if sd.polling_iterations() > 2 {
+        if sd.polling_iterations() > 4 {
             fridge_control(&sd);
             humidifier_control(&sd);
             dehumidifier_control(&sd);
