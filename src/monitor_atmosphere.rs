@@ -224,7 +224,6 @@ last heater turn off time: {}\n",
     );
 }
 
-
 /*
 dupa
 */
