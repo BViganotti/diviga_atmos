@@ -60,11 +60,9 @@ fn main() {
 
     // setting all the pins to false just in case
     relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to initialize relay");
-    // also commenting out the dehumidifier
-    //relay_ctrl::change_relay_status(RELAY_IN2_PIN, false).expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN2_PIN, false).expect("unable to initialize relay");
     relay_ctrl::change_relay_status(RELAY_IN3_PIN, false).expect("unable to initialize relay");
-    // commenting out the fridge
-    //relay_ctrl::change_relay_status(RELAY_IN4_PIN, false).expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN4_PIN, false).expect("unable to initialize relay");
 
     // The wrapper around our shared data that gives it safe access across threads
     let sd = AccessSharedData {
