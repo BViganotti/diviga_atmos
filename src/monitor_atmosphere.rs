@@ -36,7 +36,7 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
 }
 
 fn fridge_control(sd: &AccessSharedData) {
-    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
     if HIGH_TEMPERATURE_RANGE.contains(&sd.average_temp()) {
         println!("fridge_control() -> high temp range");
         if sd.fridge_status() == false {
@@ -104,7 +104,7 @@ fn fridge_control(sd: &AccessSharedData) {
 }
 
 fn humidifier_control(sd: &AccessSharedData) {
-    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
     if LOW_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
         println!("humidifier_control() -> low humidity range");
         if sd.humidifier_status() != true {
@@ -132,7 +132,7 @@ fn humidifier_control(sd: &AccessSharedData) {
 }
 
 fn dehumidifier_control(sd: &AccessSharedData) {
-    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
     if HIGH_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
         println!("dehumidifier_control() -> high humidity range");
         if sd.dehumidifier_status() != true {

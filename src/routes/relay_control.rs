@@ -18,7 +18,7 @@ pub struct ChangeFridgeStatus {
 pub async fn change_fridge_status(sd: web::Data<AccessSharedData>) -> HttpResponse {
     let prev_fridge_status = sd.fridge_status();
     let mut res = String::new();
-    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
 
     if sd.fridge_status() == true {
         if now - sd.fridge_turn_on_datetime() < time::Duration::minutes(20) {
@@ -84,7 +84,7 @@ pub struct ChangeHumidifierStatus {
 
 pub async fn trigger_humidifier(sd: web::Data<AccessSharedData>) -> HttpResponse {
     let mut res = String::new();
-    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
 
     if sd.humidifier_status() != true {
         change_relay_status(RELAY_IN1_PIN, true).expect("unable to change relay");
@@ -123,7 +123,7 @@ pub struct ChangeDehumidifierStatus {
 
 pub async fn change_dehumidifier_status(sd: web::Data<AccessSharedData>) -> HttpResponse {
     let mut res = String::new();
-    let now = OffsetDateTime::now_utc().to_offset(offset!(+2));
+    let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
     let prev_status = sd.dehumidifier_status();
 
     if sd.dehumidifier_status() != true {
