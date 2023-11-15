@@ -10,7 +10,7 @@ pub mod routes;
 pub mod shared_data;
 pub mod webserver;
 
-use rppal::uart::{Parity, Uart};
+//use rppal::uart::{Parity, Uart};
 use std::thread;
 use std::time::Duration;
 
@@ -28,10 +28,10 @@ use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN, RELAY_IN4_P
 fn main() {
     dotenv().ok();
 
-    let port_writer = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
-    let mut port_reader = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
+    // let port_writer = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
+    // let mut port_reader = Uart::with_path("/dev/ttyUSB0", 9_600, Parity::None, 8, 1).unwrap();
 
-    port_reader.set_read_mode(1, Duration::default()).unwrap();
+    // port_reader.set_read_mode(1, Duration::default()).unwrap();
 
     // Initialize a struct that will be our "global" data, which allows safe access from every thread
     let common_data = SharedData::new(
@@ -74,12 +74,13 @@ fn main() {
     // and updates the SharedData::current_temp value.
     let sdclone_1 = sd.clone();
 
-    let handle = thread::spawn(move || {
-        request_atmosphere::request_atmosphere(port_writer);
-    });
+    // let handle = thread::spawn(move || {
+    //     request_atmosphere::request_atmosphere(port_writer);
+    // });
 
-    thread::spawn(move || {
-        read_atmosphere::read_atmosphere_from_sensors(port_reader, &sdclone_1);
+    let handle = thread::spawn(move || {
+        //read_atmosphere::read_atmosphere_from_sensors(port_reader, &sdclone_1);
+        read_atmosphere::read_atmosphere_from_sensors(&sdclone_1);
     });
 
     let sdclone_2 = sd.clone();
