@@ -7,7 +7,7 @@ use time::OffsetDateTime;
 
 pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
     let output = Command::new("python3")
-        .arg("test.py")
+        .arg("dht.py")
         .output()
         .expect("failed to execute process");
 
@@ -15,6 +15,10 @@ pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
     println!("{}", str_output);
 
     let v: Value = serde_json::from_str(&str_output).unwrap();
+
+    if v.get("error").is_some() {
+        std::process::exit(1);
+    }
 
     println!(
         "temp1: {} humi1: {}temp2: {} humi2: {}",
