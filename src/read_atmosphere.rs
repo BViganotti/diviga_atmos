@@ -2,10 +2,12 @@ use crate::shared_data::AccessSharedData;
 use rppal::uart::Uart;
 use serde_json::Value;
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 use time::macros::offset;
 use time::OffsetDateTime;
 
-pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
+fn get_atmosphere_from_sensor() -> String {
     let output = Command::new("python3")
         .arg("dht.py")
         .output()
@@ -14,22 +16,41 @@ pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
     let str_output: String = String::from_utf8_lossy(&output.stdout).to_string();
     println!("{}", str_output);
 
-    let v: Value = serde_json::from_str(&str_output).unwrap();
+    return str_output;
+}
 
-    if v.get("error").is_some() {
-        std::process::exit(1);
+pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
+    const MAX_RETRIES: u8 = 10;
+    let mut current_tries: u8 = 0;
+    let mut output: String = get_atmosphere_from_sensor();
+    let mut v: Value = serde_json::from_str(&output).unwrap();
+
+    while true {
+        if v.get("error").is_some() {
+            println!("HERE1");
+            if current_tries < MAX_RETRIES {
+                println!("HERE2");
+                thread::sleep(Duration::from_secs(4));
+                output = get_atmosphere_from_sensor();
+                v = serde_json::from_str(&output).unwrap();
+                current_tries += 1;
+            } else {
+                println!("MAX_RETRIES reached ! Couldn't get data from sensor ! EXITING.");
+                std::process::exit(1);
+            }
+        } else {
+            println!("HERE IS GOOD");
+            break;
+        }
     }
-
-    println!(
-        "temp1: {} humi1: {}temp2: {} humi2: {}",
-        v["t1"], v["h1"], v["t2"], v["h2"]
-    );
 
     let t1: f32 = v["t1"].as_f64().unwrap() as f32;
     let h1: f32 = v["h1"].as_f64().unwrap() as f32;
     let t2: f32 = v["t2"].as_f64().unwrap() as f32;
     let h2: f32 = v["h2"].as_f64().unwrap() as f32;
     let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
+
+    println!("t1:{}, h1:{}, t2:{}, h2:{}", t1, h1, t2, h2);
 
     sd.increment_polling_iterations();
     sd.set_temp_one(t1);
@@ -38,39 +59,3 @@ pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
     sd.set_humidity_two(h2);
     sd.set_last_reading_datetime(now);
 }
-
-// pub fn read_atmosphere_from_sensors(mut port_reader: Uart, sd: &AccessSharedData) -> ! {
-//     let mut recv_buffer = [0u8; 1];
-//     let mut data: Vec<u8> = Vec::with_capacity(23);
-//     loop {
-//         // Fill the buffer variable with any incoming data.
-//         if port_reader.read(&mut recv_buffer).unwrap() > 0 {
-//             data.push(recv_buffer[0]);
-//         }
-//         if data.len() == 23 {
-//             process_data(&data, &sd);
-//             data.clear();
-//         }
-//     }
-// }
-
-// fn process_data(data: &Vec<u8>, sd: &AccessSharedData) {
-//     let str_data = String::from_utf8(data.to_vec()).expect("Found invalid UTF-8");
-
-//     println!("{}", str_data);
-
-//     let parts: Vec<String> = str_data.split(":").map(|s| s.to_string()).collect();
-
-//     let t1: f32 = parts[0].parse().unwrap();
-//     let h1: f32 = parts[1].parse().unwrap();
-//     let t2: f32 = parts[2].parse().unwrap();
-//     let h2: f32 = parts[3].parse().unwrap();
-//     let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
-
-//     sd.increment_polling_iterations();
-//     sd.set_temp_one(t1);
-//     sd.set_humidity_one(h1);
-//     sd.set_temp_two(t2);
-//     sd.set_humidity_two(h2);
-//     sd.set_last_reading_datetime(now);
-// }

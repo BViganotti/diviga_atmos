@@ -31,7 +31,7 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
 
         debug_data_display(&sd);
 
-        thread::sleep(Duration::from_secs(30));
+        thread::sleep(Duration::from_secs(60));
     }
 }
 
