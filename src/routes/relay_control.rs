@@ -1,5 +1,7 @@
 use crate::relay_ctrl::change_relay_status;
-use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
+use crate::relay_ctrl::{
+    RELAY_IN1_PIN_HUMIDIFIER, RELAY_IN2_PIN_DEHUMIDIFIER, RELAY_IN4_PIN_FRIDGE,
+};
 use crate::AccessSharedData;
 use actix_web::{http::header::ContentType, web, HttpResponse};
 use std::{thread, time::Duration};
@@ -34,7 +36,7 @@ pub async fn change_fridge_status(sd: web::Data<AccessSharedData>) -> HttpRespon
             // more than 20 minutes have passed since the last turn on
             // we can safely turn off the fridge
             println!("fridge_control() -> turning off the fridge !");
-            change_relay_status(RELAY_IN4_PIN, false).expect("could not change relay");
+            change_relay_status(RELAY_IN4_PIN_FRIDGE, false).expect("could not change relay");
             sd.set_fridge_status(false);
             sd.set_fridge_turn_off_datetime(now);
             res = "fridge turned off !".to_owned();
@@ -53,7 +55,7 @@ pub async fn change_fridge_status(sd: web::Data<AccessSharedData>) -> HttpRespon
             // more than 20 minutes have passed since the last turn on
             // we can safely turn off the fridge
             println!("fridge_control() -> turning on the fridge !");
-            change_relay_status(RELAY_IN4_PIN, true).expect("could not change relay");
+            change_relay_status(RELAY_IN4_PIN_FRIDGE, true).expect("could not change relay");
             sd.set_fridge_status(true);
             sd.set_fridge_turn_on_datetime(now);
             res = "fridge turned on !".to_owned();
@@ -87,13 +89,13 @@ pub async fn trigger_humidifier(sd: web::Data<AccessSharedData>) -> HttpResponse
     let now = OffsetDateTime::now_utc().to_offset(offset!(+1));
 
     if sd.humidifier_status() != true {
-        change_relay_status(RELAY_IN1_PIN, true).expect("unable to change relay");
+        change_relay_status(RELAY_IN1_PIN_HUMIDIFIER, true).expect("unable to change relay");
         sd.set_humidifier_status(true);
         sd.set_humidifier_turn_on_datetime(now);
         // in just a few seconds the humidity can reach 100% which isn't what i want
         // setting a sleep here and turning off the humidifer after a few seconds
         thread::sleep(Duration::from_secs(3));
-        change_relay_status(RELAY_IN1_PIN, false).expect("unable to change relay");
+        change_relay_status(RELAY_IN1_PIN_HUMIDIFIER, false).expect("unable to change relay");
         sd.set_humidifier_status(false);
         sd.set_humidifier_turn_off_datetime(now);
         res = "humidifier turned on and off for 3 secs".to_owned();
@@ -127,12 +129,12 @@ pub async fn change_dehumidifier_status(sd: web::Data<AccessSharedData>) -> Http
     let prev_status = sd.dehumidifier_status();
 
     if sd.dehumidifier_status() != true {
-        change_relay_status(RELAY_IN2_PIN, true).expect("unable to change relay");
+        change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, true).expect("unable to change relay");
         sd.set_dehumidifier_status(true);
         sd.set_dehumidifier_turn_on_datetime(now);
         res = "dehumidifier turned on".to_owned();
     } else {
-        change_relay_status(RELAY_IN2_PIN, false).expect("unable to change relay");
+        change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, false).expect("unable to change relay");
         sd.set_dehumidifier_status(false);
         sd.set_dehumidifier_turn_off_datetime(now);
         res = "dehumidifier turned off".to_owned();

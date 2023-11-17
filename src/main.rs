@@ -11,7 +11,10 @@ pub mod shared_data;
 pub mod ventilation;
 pub mod webserver;
 
-use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN3_PIN, RELAY_IN4_PIN};
+use crate::relay_ctrl::{
+    RELAY_IN1_PIN_HUMIDIFIER, RELAY_IN2_PIN_DEHUMIDIFIER, RELAY_IN3_PIN_VENTILATOR_OR_HEATER,
+    RELAY_IN4_PIN_FRIDGE,
+};
 use crate::shared_data::AccessSharedData;
 use crate::shared_data::SharedData;
 use actix_web::rt;
@@ -51,10 +54,14 @@ fn main() {
     );
 
     // setting all the pins to false just in case
-    relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to initialize relay");
-    relay_ctrl::change_relay_status(RELAY_IN2_PIN, false).expect("unable to initialize relay");
-    relay_ctrl::change_relay_status(RELAY_IN3_PIN, false).expect("unable to initialize relay");
-    relay_ctrl::change_relay_status(RELAY_IN4_PIN, false).expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN1_PIN_HUMIDIFIER, false)
+        .expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, false)
+        .expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN3_PIN_VENTILATOR_OR_HEATER, false)
+        .expect("unable to initialize relay");
+    relay_ctrl::change_relay_status(RELAY_IN4_PIN_FRIDGE, false)
+        .expect("unable to initialize relay");
 
     // The wrapper around our shared data that gives it safe access across threads
     let sd = AccessSharedData {

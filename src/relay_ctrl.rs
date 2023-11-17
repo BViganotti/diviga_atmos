@@ -4,10 +4,10 @@
 use rppal::gpio::Gpio;
 use std::error::Error;
 
-pub const RELAY_IN1_PIN: u8 = 14;
-pub const RELAY_IN2_PIN: u8 = 15;
-pub const RELAY_IN3_PIN: u8 = 18;
-pub const RELAY_IN4_PIN: u8 = 17;
+pub const RELAY_IN1_PIN_HUMIDIFIER: u8 = 14;
+pub const RELAY_IN2_PIN_DEHUMIDIFIER: u8 = 15;
+pub const RELAY_IN3_PIN_VENTILATOR_OR_HEATER: u8 = 18;
+pub const RELAY_IN4_PIN_FRIDGE: u8 = 17;
 
 pub fn change_relay_status(pin_number: u8, relay_status: bool) -> Result<(), Box<dyn Error>> {
     // Grab a handle to the pin we want to control, and set it up to be an

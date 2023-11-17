@@ -1,5 +1,4 @@
 use crate::shared_data::AccessSharedData;
-use rppal::uart::Uart;
 use serde_json::Value;
 use std::process::Command;
 use std::thread;
@@ -25,7 +24,7 @@ pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
     let mut output: String = get_atmosphere_from_sensor();
     let mut v: Value = serde_json::from_str(&output).unwrap();
 
-    while true {
+    loop {
         if v.get("error").is_some() {
             println!("HERE1");
             if current_tries < MAX_RETRIES {

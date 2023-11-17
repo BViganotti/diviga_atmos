@@ -1,6 +1,5 @@
 use crate::read_atmosphere;
 use crate::shared_data::AccessSharedData;
-use rppal::uart::Uart;
 use std::thread;
 use std::time::Duration;
 

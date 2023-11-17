@@ -1,5 +1,7 @@
-use crate::relay_ctrl::{RELAY_IN1_PIN, RELAY_IN2_PIN, RELAY_IN4_PIN};
-// RELAY_IN3_PIN is for the heater, i don't know if i need one yet
+use crate::relay_ctrl::{
+    RELAY_IN1_PIN_HUMIDIFIER, RELAY_IN2_PIN_DEHUMIDIFIER, RELAY_IN4_PIN_FRIDGE,
+};
+// RELAY_IN3_PIN_VENTILATOR_OR_HEATER is for the heater, i don't know if i need one yet
 use crate::{relay_ctrl, shared_data::AccessSharedData};
 use std::{thread, time::Duration};
 use time::format_description;
@@ -51,7 +53,7 @@ fn fridge_control(sd: &AccessSharedData) {
                 // more than 15 minutes have passed since the last turn off
                 // we can safely turn on the fridge
                 println!("fridge_control() -> turning on the fridge !");
-                relay_ctrl::change_relay_status(RELAY_IN4_PIN, true)
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN_FRIDGE, true)
                     .expect("unable to change relay");
                 sd.set_fridge_status(true);
                 sd.set_fridge_turn_on_datetime(now);
@@ -73,7 +75,7 @@ fn fridge_control(sd: &AccessSharedData) {
                 // more than 30 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
-                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false)
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN_FRIDGE, false)
                     .expect("unable to change relay");
                 sd.set_fridge_status(false);
                 sd.set_fridge_turn_off_datetime(now);
@@ -94,7 +96,7 @@ fn fridge_control(sd: &AccessSharedData) {
                 // more than 0 minutes have passed since the last turn on
                 // we can safely turn off the fridge
                 println!("fridge_control() -> turning off the fridge !");
-                relay_ctrl::change_relay_status(RELAY_IN4_PIN, false)
+                relay_ctrl::change_relay_status(RELAY_IN4_PIN_FRIDGE, false)
                     .expect("unable to change relay");
                 sd.set_fridge_status(false);
                 sd.set_fridge_turn_off_datetime(now);
@@ -109,14 +111,16 @@ fn humidifier_control(sd: &AccessSharedData) {
         println!("humidifier_control() -> low humidity range");
         if sd.humidifier_status() != true {
             println!("humidifier_control() -> turning on humidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN1_PIN, true).expect("unable to change relay");
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN_HUMIDIFIER, true)
+                .expect("unable to change relay");
             sd.set_humidifier_status(true);
             sd.set_humidifier_turn_on_datetime(now);
             // in just a few seconds the humidity can reach 100% which isn't what i want
             // setting a sleep here and turning off the humidifer after a few seconds
             thread::sleep(Duration::from_secs(3));
             println!("humidifier_control() -> 3secs passed ! turning off humidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to change relay");
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN_HUMIDIFIER, false)
+                .expect("unable to change relay");
             sd.set_humidifier_status(false);
             sd.set_humidifier_turn_off_datetime(now);
         }
@@ -124,7 +128,8 @@ fn humidifier_control(sd: &AccessSharedData) {
         println!("humidifier_control() -> ideal humidity range");
         if sd.humidifier_status() == true {
             println!("humidifier_control() -> turning off humidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN1_PIN, false).expect("unable to change relay");
+            relay_ctrl::change_relay_status(RELAY_IN1_PIN_HUMIDIFIER, false)
+                .expect("unable to change relay");
             sd.set_humidifier_status(false);
             sd.set_humidifier_turn_off_datetime(now);
         }
@@ -137,7 +142,8 @@ fn dehumidifier_control(sd: &AccessSharedData) {
         println!("dehumidifier_control() -> high humidity range");
         if sd.dehumidifier_status() != true {
             println!("dehumidifier_control() -> turning on dehumidifier");
-            relay_ctrl::change_relay_status(RELAY_IN2_PIN, true).expect("unable to change relay");
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, true)
+                .expect("unable to change relay");
             sd.set_dehumidifier_status(true);
             sd.set_dehumidifier_turn_on_datetime(now);
         }
@@ -145,7 +151,8 @@ fn dehumidifier_control(sd: &AccessSharedData) {
         println!("dehumidifier_control() -> ideal humidity range");
         if sd.dehumidifier_status() == true {
             println!("dehumidifier_control() -> turning off dehumidifier !");
-            relay_ctrl::change_relay_status(RELAY_IN2_PIN, false).expect("unable to change relay");
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, false)
+                .expect("unable to change relay");
             sd.set_dehumidifier_status(false);
             sd.set_dehumidifier_turn_off_datetime(now);
         }
