@@ -26,9 +26,7 @@ pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
 
     loop {
         if v.get("error").is_some() {
-            println!("HERE1");
             if current_tries < MAX_RETRIES {
-                println!("HERE2");
                 thread::sleep(Duration::from_secs(4));
                 output = get_atmosphere_from_sensor();
                 v = serde_json::from_str(&output).unwrap();
@@ -38,7 +36,6 @@ pub fn read_atmosphere_from_sensors(sd: &AccessSharedData) {
                 std::process::exit(1);
             }
         } else {
-            println!("HERE IS GOOD");
             break;
         }
     }

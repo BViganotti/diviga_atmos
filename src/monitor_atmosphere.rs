@@ -13,8 +13,8 @@ const HIGH_TEMPERATURE_RANGE: std::ops::Range<f32> = 14.0..100.0;
 const IDEAL_TEMPERATURE_RANGE: std::ops::Range<f32> = 11.0..14.0;
 
 const LOW_HUMIDITY_RANGE: std::ops::Range<f32> = 0.0..60.0;
-const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 82.0..100.0;
-const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 77.0..82.00;
+const HIGH_HUMIDITY_RANGE: std::ops::Range<f32> = 80.0..100.0;
+const IDEAL_HUMIDITY_RANGE: std::ops::Range<f32> = 75.0..80.00;
 
 pub fn atmosphere_monitoring(sd: &AccessSharedData) {
     loop {
@@ -149,6 +149,15 @@ fn dehumidifier_control(sd: &AccessSharedData) {
         }
     } else if IDEAL_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
         println!("dehumidifier_control() -> ideal humidity range");
+        if sd.dehumidifier_status() == true {
+            println!("dehumidifier_control() -> turning off dehumidifier !");
+            relay_ctrl::change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, false)
+                .expect("unable to change relay");
+            sd.set_dehumidifier_status(false);
+            sd.set_dehumidifier_turn_off_datetime(now);
+        }
+    } else if LOW_HUMIDITY_RANGE.contains(&sd.average_humidity()) {
+        println!("dehumidifier_control() -> low humidity range");
         if sd.dehumidifier_status() == true {
             println!("dehumidifier_control() -> turning off dehumidifier !");
             relay_ctrl::change_relay_status(RELAY_IN2_PIN_DEHUMIDIFIER, false)
