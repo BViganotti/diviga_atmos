@@ -49,12 +49,6 @@ pub async fn index(common_data: web::Data<AccessSharedData>) -> HttpResponse {
      <li><strong>{}</strong></li>
     </ul>
     <p>&nbsp;</p>
-    <form action=\"/change_fridge_status\" method=\"post\">
-        <button name=\"fridge_status\" value=\"fridge_status\">Change fridge status</button>
-    </form>
-    <form action=\"/change_dehumidifier_status\" method=\"post\">
-        <button name=\"dehumidifier_status\" value=\"dehumidifier_status\">Change dehumidifier status</button>
-    </form>
     <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
     <p><strong>Copyright DIVIGA 2023-Eternity</strong></p></body></html>",
         &common_data.average_temp().to_string(),
@@ -97,3 +91,13 @@ pub async fn index(common_data: web::Data<AccessSharedData>) -> HttpResponse {
         .content_type(ContentType::html())
         .body(html_res)
 }
+
+
+/*
+<form action=\"/change_fridge_status\" method=\"post\">
+        <button name=\"fridge_status\" value=\"fridge_status\">Change fridge status</button>
+    </form>
+    <form action=\"/change_dehumidifier_status\" method=\"post\">
+        <button name=\"dehumidifier_status\" value=\"dehumidifier_status\">Change dehumidifier status</button>
+    </form>
+*/

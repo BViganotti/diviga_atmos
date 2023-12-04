@@ -27,7 +27,7 @@ pub fn atmosphere_monitoring(sd: &AccessSharedData) {
         // for better data before triggering any relays.
         if sd.polling_iterations() > 4 {
             fridge_control(&sd);
-            humidifier_control(&sd);
+            //humidifier_control(&sd);
             dehumidifier_control(&sd);
         }
 
